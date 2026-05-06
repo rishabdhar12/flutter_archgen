@@ -1,3 +1,6 @@
+## 0.1.3
+- fixed must be a abstract module issue
+
 ## 0.1.2
 - added more information about the package. 
 

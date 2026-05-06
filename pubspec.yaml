@@ -1,6 +1,6 @@
 name: flutter_archgen
 description: Generates a feature-safe Flutter architecture shell with Riverpod, GetIt, Injectable, and Dio.
-version: 0.1.2
+version: 0.1.3
 
 environment:
   sdk: ">=3.10.0 <4.0.0"
