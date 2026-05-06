@@ -15,9 +15,6 @@ topics:
   - architecture
   - riverpod
   - code-generation
-  - getit
-  - injectable
-  - dio
 
 dependencies:
   args: ^2.7.0
