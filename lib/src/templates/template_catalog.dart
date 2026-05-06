@@ -910,7 +910,7 @@ $optionalRegistrations
 ${imports.join('\n')}
 
 @module
-class MonitoringModule {
+abstract class MonitoringModule {
   @lazySingleton
   AppLogger appLogger(AppEnv env) {
     return AppLoggerImpl(enableVerboseLogs: env.enableVerboseLogs);
@@ -939,7 +939,7 @@ import '${_packageImport(resolved, 'core/network/interceptors/retry_interceptor.
 import '${_packageImport(resolved, 'core/network/network_config.dart')}';
 
 @module
-class ServiceModule {
+abstract class ServiceModule {
   @lazySingleton
   NetworkConfig networkConfig(AppEnv env) {
     return NetworkConfig.fromEnv(env);
@@ -975,7 +975,7 @@ import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 @module
-class StorageModule {
+abstract class StorageModule {
   @preResolve
   Future<SharedPreferences> sharedPreferences() {
     return SharedPreferences.getInstance();
@@ -995,7 +995,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:injectable/injectable.dart';
 
 @module
-class DeviceInfoModule {
+abstract class DeviceInfoModule {
   @lazySingleton
   DeviceInfoPlugin deviceInfoPlugin() {
     return DeviceInfoPlugin();
@@ -1010,7 +1010,7 @@ import 'package:injectable/injectable.dart';
 import '${_packageImport(resolved, 'core/services/firebase/app_firebase_service.dart')}';
 
 @module
-class FirebaseModule {
+abstract class FirebaseModule {
   @lazySingleton
   AppFirebaseService firebaseService() {
     return const AppFirebaseService();
