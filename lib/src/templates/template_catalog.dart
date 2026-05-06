@@ -630,13 +630,15 @@ $parseCases
   String _injectionDart(ResolvedGenerationConfig resolved) {
     return '''
 import 'package:get_it/get_it.dart';
-import 'package:injectable/injectable.dart';
 import '${_packageImport(resolved, 'core/config/env.dart')}';
 import '${_packageImport(resolved, 'core/di/injection.config.dart')}';
 
 final GetIt getIt = GetIt.instance;
 
-@InjectableInit(preferRelativeImports: true)
+/// Initializes the dependency injection container with the provided environment configuration.
+///
+/// This function should be called once during application startup, typically in main.dart.
+/// It sets up all service dependencies and returns the configured GetIt instance.
 Future<GetIt> configureDependencies(AppEnv env) async {
   await getIt.reset();
   return getIt.init(env: env);

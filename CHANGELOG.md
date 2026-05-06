@@ -1,3 +1,6 @@
+## 0.1.4
+- fixed injectable env issue - now completely manual.
+
 ## 0.1.3
 - fixed must be a abstract module issue
 
