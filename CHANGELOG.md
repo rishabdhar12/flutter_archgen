@@ -1,3 +1,9 @@
+## 0.1.7
+- fixed injectable warnings.
+
+## 0.1.6
+- fixed build_runner warnings.
+
 ## 0.1.5
 - fixed injecxtion config generation issue.
 

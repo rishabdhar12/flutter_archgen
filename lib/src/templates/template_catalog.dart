@@ -632,14 +632,14 @@ import '${_packageImport(resolved, 'core/di/injection.config.dart')}';
 
 final GetIt getIt = GetIt.instance;
 
-@InjectableInit(preferRelativeImports: true)
-Future<GetIt> configureDependencies(AppEnv env) async {
+  @InjectableInit(preferRelativeImports: true)
+  Future<GetIt> configureDependencies(AppEnv env) async {
   await getIt.reset();
   // Make the runtime environment available to generated modules
   getIt.registerSingleton<AppEnv>(env);
-  // Delegate registrations to the generated code. The generated init expects
-  // an `environment` string (e.g. flavor name).
-  return getIt.init(environment: env.flavorName);
+  // Delegate registrations to the generated code (extension `init`).
+  await getIt.init(environment: env.flavorName);
+  return getIt;
 }
 ''';
   }
@@ -678,8 +678,8 @@ ${imports.join('\n')}
 @module
 abstract class MonitoringModule {
   @lazySingleton
-  AppLogger appLogger(AppEnv env) {
-    return AppLoggerImpl(enableVerboseLogs: env.enableVerboseLogs);
+  AppLogger appLogger() {
+    return AppLoggerImpl(enableVerboseLogs: AppEnv.fromEnvironment().enableVerboseLogs);
   }
 
   @lazySingleton
@@ -707,8 +707,8 @@ import '${_packageImport(resolved, 'core/network/network_config.dart')}';
 @module
 abstract class ServiceModule {
   @lazySingleton
-  NetworkConfig networkConfig(AppEnv env) {
-    return NetworkConfig.fromEnv(env);
+  NetworkConfig networkConfig() {
+    return NetworkConfig.fromEnv(AppEnv.fromEnvironment());
   }
 
   @lazySingleton
@@ -740,6 +740,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '${_packageImport(resolved, 'core/services/security/secure_storage_service.dart')}';
+import '${_packageImport(resolved, 'core/services/preferences/app_preferences.dart')}';
+import '${_packageImport(resolved, 'core/network/services/token_storage.dart')}';
+import '${_packageImport(resolved, 'core/network/services/token_provider.dart')}';
+
 @module
 abstract class StorageModule {
   @preResolve
@@ -751,6 +756,26 @@ abstract class StorageModule {
   FlutterSecureStorage secureStorage() {
     return const FlutterSecureStorage();
   }
+
+    @lazySingleton
+    SecureStorageService secureStorageService(FlutterSecureStorage storage) {
+      return SecureStorageService(storage);
+    }
+
+    @lazySingleton
+    AppPreferences appPreferences(SharedPreferences sharedPreferences) {
+      return AppPreferences(sharedPreferences);
+    }
+
+    @lazySingleton
+    TokenStorage tokenStorage(SecureStorageService secureStorageService) {
+      return SecureTokenStorage(secureStorageService);
+    }
+
+    @lazySingleton
+    TokenProvider tokenProvider(TokenStorage tokenStorage) {
+      return SecureTokenProvider(tokenStorage);
+    }
 }
 ''';
   }
@@ -1143,10 +1168,12 @@ class NetworkConstants {
   String _authInterceptorDart(ResolvedGenerationConfig resolved) {
     return '''
 import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
 import '${_packageImport(resolved, 'core/logging/app_logger.dart')}';
 import '${_packageImport(resolved, 'core/network/network_constants.dart')}';
 import '${_packageImport(resolved, 'core/network/services/token_provider.dart')}';
 
+@lazySingleton
 class AuthInterceptor extends Interceptor {
   AuthInterceptor({
     required TokenProvider tokenProvider,
@@ -1192,16 +1219,17 @@ class AuthInterceptor extends Interceptor {
   String _loggingInterceptorDart(ResolvedGenerationConfig resolved) {
     return '''
 import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
 import '${_packageImport(resolved, 'core/config/env.dart')}';
 import '${_packageImport(resolved, 'core/logging/app_logger.dart')}';
 import '${_packageImport(resolved, 'core/network/network_constants.dart')}';
 
+@lazySingleton
 class LoggingInterceptor extends Interceptor {
   LoggingInterceptor({
     required AppLogger logger,
-    required AppEnv env,
   })  : _logger = logger,
-        _isVerbose = env.enableVerboseLogs;
+        _isVerbose = AppEnv.fromEnvironment().enableVerboseLogs;
 
   final bool _isVerbose;
   final AppLogger _logger;
@@ -1263,8 +1291,10 @@ class LoggingInterceptor extends Interceptor {
   String _retryInterceptorDart(ResolvedGenerationConfig resolved) {
     return '''
 import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
 import '${_packageImport(resolved, 'core/logging/app_logger.dart')}';
 
+@lazySingleton
 class RetryInterceptor extends Interceptor {
   RetryInterceptor({
     required AppLogger logger,
@@ -1987,10 +2017,12 @@ class AppFirebaseService {
   String _sentryMonitoringServiceDart(ResolvedGenerationConfig resolved) {
     return '''
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:injectable/injectable.dart';
 
 import '${_packageImport(resolved, 'core/config/env.dart')}';
 import '${_packageImport(resolved, 'core/logging/app_logger.dart')}';
 
+@lazySingleton
 class SentryMonitoringService {
   SentryMonitoringService({required AppLogger logger}) : _logger = logger;
 
@@ -2042,10 +2074,12 @@ import 'dart:async';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:injectable/injectable.dart';
 
 import '${_packageImport(resolved, 'core/config/env.dart')}';
 import '${_packageImport(resolved, 'core/logging/app_logger.dart')}';
 
+@lazySingleton
 class CrashlyticsMonitoringService {
   CrashlyticsMonitoringService({required AppLogger logger}) : _logger = logger;
 
