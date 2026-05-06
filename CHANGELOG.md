@@ -1,3 +1,9 @@
+## 0.1.2
+- added more information about the package. 
+
+## 0.1.1
+- Added metadata
+
 ## 0.1.0
 
 - Initial release of the `flutter_archgen` phase-1 CLI generator.
@@ -5,5 +11,3 @@
 - Includes optional Firebase, notifications, Hive, SQLite, and device info modules.
 - Adds optional Sentry and Firebase Crashlytics configuration scaffolding.
 
-## 0.1.1
-- Added metadata
