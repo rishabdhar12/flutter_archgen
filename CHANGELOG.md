@@ -4,3 +4,6 @@
 - Adds `dart run flutter_archgen:init` for architecture scaffolding.
 - Includes optional Firebase, notifications, Hive, SQLite, and device info modules.
 - Adds optional Sentry and Firebase Crashlytics configuration scaffolding.
+
+## 0.1.1
+- Added metadata
