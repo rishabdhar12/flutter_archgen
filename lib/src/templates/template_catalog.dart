@@ -15,10 +15,6 @@ class TemplateCatalog {
       _dartFile('lib/core/config/flavor.dart', _flavorDart(resolved)),
       _dartFile('lib/core/di/injection.dart', _injectionDart(resolved)),
       _dartFile(
-        'lib/core/di/injection.config.dart',
-        _injectionConfigDart(resolved),
-      ),
-      _dartFile(
         'lib/core/di/modules/monitoring_module.dart',
         _monitoringModuleDart(resolved),
       ),
@@ -630,252 +626,20 @@ $parseCases
   String _injectionDart(ResolvedGenerationConfig resolved) {
     return '''
 import 'package:get_it/get_it.dart';
+import 'package:injectable/injectable.dart';
 import '${_packageImport(resolved, 'core/config/env.dart')}';
 import '${_packageImport(resolved, 'core/di/injection.config.dart')}';
 
 final GetIt getIt = GetIt.instance;
 
-/// Initializes the dependency injection container with the provided environment configuration.
-///
-/// This function should be called once during application startup, typically in main.dart.
-/// It sets up all service dependencies and returns the configured GetIt instance.
+@InjectableInit(preferRelativeImports: true)
 Future<GetIt> configureDependencies(AppEnv env) async {
   await getIt.reset();
-  return getIt.init(env: env);
-}
-''';
-  }
-
-  String _injectionConfigDart(ResolvedGenerationConfig resolved) {
-    final imports = <String>[
-      "import 'package:dio/dio.dart';",
-      "import 'package:flutter_secure_storage/flutter_secure_storage.dart';",
-      "import 'package:get_it/get_it.dart';",
-      "import 'package:injectable/injectable.dart';",
-      "import 'package:shared_preferences/shared_preferences.dart';",
-      "import '${_packageImport(resolved, 'core/config/env.dart')}';",
-      "import '${_packageImport(resolved, 'core/di/modules/monitoring_module.dart')}';",
-      "import '${_packageImport(resolved, 'core/di/modules/service_module.dart')}';",
-      "import '${_packageImport(resolved, 'core/di/modules/storage_module.dart')}';",
-      "import '${_packageImport(resolved, 'core/error/global_error_mapper.dart')}';",
-      "import '${_packageImport(resolved, 'core/lifecycle/app_lifecycle_manager.dart')}';",
-      "import '${_packageImport(resolved, 'core/logging/app_logger.dart')}';",
-      "import '${_packageImport(resolved, 'core/monitoring/app_monitor.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/interceptors/auth_interceptor.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/interceptors/logging_interceptor.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/interceptors/retry_interceptor.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/network_config.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/services/api_client.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/services/api_client_impl.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/services/token_provider.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/services/token_storage.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/utils/network_error_mapper.dart')}';",
-      "import '${_packageImport(resolved, 'core/network/utils/request_validator.dart')}';",
-      "import '${_packageImport(resolved, 'core/services/preferences/app_preferences.dart')}';",
-      "import '${_packageImport(resolved, 'core/services/security/secure_storage_service.dart')}';",
-    ];
-
-    if (resolved.config.enableFirebase) {
-      imports
-        ..add(
-          "import '${_packageImport(resolved, 'core/di/modules/firebase_module.dart')}';",
-        )
-        ..add(
-          "import '${_packageImport(resolved, 'core/services/firebase/app_firebase_service.dart')}';",
-        );
-    }
-
-    if (resolved.config.enableRemoteConfig) {
-      imports.add(
-        "import '${_packageImport(resolved, 'core/services/firebase/remote_config_service.dart')}';",
-      );
-    }
-
-    if (resolved.config.enableSentry) {
-      imports.add(
-        "import '${_packageImport(resolved, 'core/monitoring/sentry_monitoring_service.dart')}';",
-      );
-    }
-
-    if (resolved.config.enableCrashlytics) {
-      imports.add(
-        "import '${_packageImport(resolved, 'core/monitoring/crashlytics_monitoring_service.dart')}';",
-      );
-    }
-
-    if (resolved.config.enableDeviceInfo) {
-      imports
-        ..add("import 'package:device_info_plus/device_info_plus.dart';")
-        ..add(
-          "import '${_packageImport(resolved, 'core/di/modules/device_info_module.dart')}';",
-        )
-        ..add(
-          "import '${_packageImport(resolved, 'core/services/device_info/app_device_info_service.dart')}';",
-        );
-    }
-
-    if (resolved.config.enableHive) {
-      imports.add(
-        "import '${_packageImport(resolved, 'core/services/cache/hive_cache_service.dart')}';",
-      );
-    }
-
-    if (resolved.config.enableSqlite) {
-      imports.add(
-        "import '${_packageImport(resolved, 'core/services/database/app_database_service.dart')}';",
-      );
-    }
-
-    if (resolved.config.enableNotifications) {
-      imports.add(
-        "import '${_packageImport(resolved, 'core/notifications/app_notification_service.dart')}';",
-      );
-    }
-
-    final optionalRegistrations = <String>[
-      if (resolved.config.enableFirebase)
-        '''
-    gh.lazySingleton<AppFirebaseService>(
-      () => firebaseModule.firebaseService(),
-    );
-''',
-      if (resolved.config.enableRemoteConfig)
-        '''
-    gh.lazySingleton<RemoteConfigService>(
-      () => RemoteConfigService(logger: gh<AppLogger>()),
-    );
-''',
-      if (resolved.config.enableSentry)
-        '''
-    gh.lazySingleton<SentryMonitoringService>(
-      () => SentryMonitoringService(logger: gh<AppLogger>()),
-    );
-''',
-      if (resolved.config.enableCrashlytics)
-        '''
-    gh.lazySingleton<CrashlyticsMonitoringService>(
-      () => CrashlyticsMonitoringService(logger: gh<AppLogger>()),
-    );
-''',
-      if (resolved.config.enableDeviceInfo)
-        '''
-    gh.lazySingleton<DeviceInfoPlugin>(
-      () => deviceInfoModule.deviceInfoPlugin(),
-    );
-    gh.lazySingleton<AppDeviceInfoService>(
-      () => AppDeviceInfoService(gh<DeviceInfoPlugin>()),
-    );
-''',
-      if (resolved.config.enableHive)
-        '''
-    gh.lazySingleton<HiveCacheService>(() => HiveCacheService());
-''',
-      if (resolved.config.enableSqlite)
-        '''
-    gh.lazySingleton<AppDatabaseService>(() => AppDatabaseService());
-''',
-      if (resolved.config.enableNotifications)
-        '''
-    gh.lazySingleton<AppNotificationService>(
-      () => AppNotificationService(logger: gh<AppLogger>()),
-    );
-''',
-    ].join();
-
-    final optionalModuleInitializers = <String>[
-      if (resolved.config.enableFirebase)
-        '  final firebaseModule = FirebaseModule();',
-      if (resolved.config.enableDeviceInfo)
-        '  final deviceInfoModule = DeviceInfoModule();',
-    ].join('\n');
-
-    final appMonitorArguments = <String>[
-      'gh<AppLogger>()',
-      if (resolved.config.enableSentry) 'gh<SentryMonitoringService>()',
-      if (resolved.config.enableCrashlytics)
-        'gh<CrashlyticsMonitoringService>()',
-    ].join(', ');
-
-    return '''
-${imports.join('\n')}
-
-extension GetItInjectableX on GetIt {
-  Future<GetIt> init({
-    required AppEnv env,
-  }) async {
-    final gh = GetItHelper(this, env.flavorName);
-    final storageModule = StorageModule();
-    final monitoringModule = MonitoringModule();
-    final serviceModule = ServiceModule();
-$optionalModuleInitializers
-
-    registerSingleton<AppEnv>(env);
-
-    final sharedPreferences = await storageModule.sharedPreferences();
-    registerSingleton<SharedPreferences>(sharedPreferences);
-    gh.lazySingleton<FlutterSecureStorage>(() => storageModule.secureStorage());
-    gh.lazySingleton<AppLogger>(() => monitoringModule.appLogger(env));
-    gh.lazySingleton<SecureStorageService>(
-      () => SecureStorageService(gh<FlutterSecureStorage>()),
-    );
-    gh.lazySingleton<AppPreferences>(
-      () => AppPreferences(gh<SharedPreferences>()),
-    );
-    gh.lazySingleton<TokenStorage>(
-      () => SecureTokenStorage(gh<SecureStorageService>()),
-    );
-    gh.lazySingleton<TokenProvider>(
-      () => SecureTokenProvider(gh<TokenStorage>()),
-    );
-    gh.lazySingleton<GlobalErrorMapper>(() => const GlobalErrorMapper());
-    gh.lazySingleton<RequestValidator>(() => const RequestValidator());
-    gh.lazySingleton<NetworkErrorMapper>(() => const NetworkErrorMapper());
-    gh.lazySingleton<NetworkConfig>(() => serviceModule.networkConfig(env));
-    gh.lazySingleton<AuthInterceptor>(
-      () => AuthInterceptor(
-        tokenProvider: gh<TokenProvider>(),
-        logger: gh<AppLogger>(),
-      ),
-    );
-    gh.lazySingleton<LoggingInterceptor>(
-      () => LoggingInterceptor(
-        logger: gh<AppLogger>(),
-        env: env,
-      ),
-    );
-    gh.lazySingleton<RetryInterceptor>(
-      () => RetryInterceptor(logger: gh<AppLogger>()),
-    );
-    gh.lazySingleton<Dio>(
-      () => serviceModule.dio(
-        gh<NetworkConfig>(),
-        gh<AuthInterceptor>(),
-        gh<LoggingInterceptor>(),
-        gh<RetryInterceptor>(),
-      ),
-    );
-    gh.lazySingleton<ApiClient>(
-      () => ApiClientImpl(
-        dio: gh<Dio>(),
-        tokenProvider: gh<TokenProvider>(),
-        networkConfig: gh<NetworkConfig>(),
-        networkErrorMapper: gh<NetworkErrorMapper>(),
-        globalErrorMapper: gh<GlobalErrorMapper>(),
-        requestValidator: gh<RequestValidator>(),
-      ),
-    );
-    gh.lazySingleton<AppLifecycleManager>(
-      () => serviceModule.lifecycleManager(
-        gh<AppLogger>(),
-        gh<AppMonitor>(),
-      ),
-    );
-$optionalRegistrations
-    gh.lazySingleton<AppMonitor>(
-      () => monitoringModule.appMonitor($appMonitorArguments),
-    );
-    return this;
-  }
+  // Make the runtime environment available to generated modules
+  getIt.registerSingleton<AppEnv>(env);
+  // Delegate registrations to the generated code. The generated init expects
+  // an `environment` string (e.g. flavor name).
+  return getIt.init(environment: env.flavorName);
 }
 ''';
   }

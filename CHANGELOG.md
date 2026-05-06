@@ -1,3 +1,6 @@
+## 0.1.5
+- fixed injecxtion config generation issue.
+
 ## 0.1.4
 - fixed injectable env issue - now completely manual.
 
