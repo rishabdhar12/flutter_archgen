@@ -1,3 +1,11 @@
+## 0.1.8
+- sqlite CRUD functions and implementation.
+- hive CRUD functions and implementation.
+- firebase storage and database nad remote config functions and implementation.
+- shorebird integration.
+- fastlane integration.
+- added example
+
 ## 0.1.7
 - fixed injectable warnings.
 

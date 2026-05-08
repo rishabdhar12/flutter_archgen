@@ -14,6 +14,8 @@ class GenerationConfig {
     required this.enableDeviceInfo,
     required this.enableHive,
     required this.enableSqlite,
+    required this.enableShorebird,
+    required this.enableFastlane,
     required this.force,
     required this.skipPubGet,
     this.appName,
@@ -31,6 +33,8 @@ class GenerationConfig {
     required bool enableDeviceInfo,
     required bool enableHive,
     required bool enableSqlite,
+    bool enableShorebird = false,
+    bool enableFastlane = false,
     required bool force,
     required bool skipPubGet,
     String? appName,
@@ -62,6 +66,8 @@ class GenerationConfig {
       enableDeviceInfo: enableDeviceInfo,
       enableHive: enableHive,
       enableSqlite: enableSqlite,
+      enableShorebird: enableShorebird,
+      enableFastlane: enableFastlane,
       force: force,
       skipPubGet: skipPubGet,
       appName: appName,
@@ -72,10 +78,12 @@ class GenerationConfig {
   final String? appName;
   final bool enableDeviceInfo;
   final bool enableCrashlytics;
+  final bool enableFastlane;
   final bool enableFirebase;
   final bool enableHive;
   final bool enableNotifications;
   final bool enableRemoteConfig;
+  final bool enableShorebird;
   final bool enableSentry;
   final bool enableSqlite;
   final bool force;

@@ -10,6 +10,12 @@ import 'package:recase/recase.dart';
 import 'package:yaml/yaml.dart';
 
 class ArchitectureGenerator {
+  static const Set<String> _obsoleteGeneratedPaths = <String>{
+    'lib/core/di/modules/firebase_module.dart',
+    'lib/core/services/firebase/app_firebase_service.dart',
+    'lib/core/services/firebase/remote_config_service.dart',
+  };
+
   ArchitectureGenerator({Logger? logger}) : _logger = logger ?? Logger();
 
   final Logger _logger;
@@ -42,6 +48,10 @@ class ArchitectureGenerator {
     updatedCount += await PubspecEditor(pubspecFile).apply(config);
 
     final files = TemplateCatalog().build(resolvedConfig);
+    updatedCount += await _removeObsoleteGeneratedFiles(
+      config,
+      files.map((file) => file.path).toSet(),
+    );
     final writtenPaths = <String>[];
     final skippedPaths = <String>[];
 
@@ -79,11 +89,15 @@ class ArchitectureGenerator {
       updatedCount: updatedCount,
       nextSteps: <String>[
         if (!config.skipPubGet) 'run `flutter pub get`',
-        'run `dart run build_runner build --delete-conflicting-outputs`',
+        'run `dart run build_runner build`',
         if (config.enableFirebase)
           'add Firebase config files for each platform',
         if (config.enableCrashlytics)
           're-run `flutterfire configure` so Crashlytics platform setup stays in sync',
+        if (config.enableShorebird)
+          'review `tool/release/shorebird/README.md` and run `shorebird init`',
+        if (config.enableFastlane)
+          'review `fastlane/README.md` and run `bundle install`',
         if (config.enableSentry)
           'set `SENTRY_DSN` and fill `sentry.properties` before uploading release symbols',
         'wire app-specific routes and features',
@@ -106,6 +120,33 @@ class ArchitectureGenerator {
     final separator = existing.trimRight().isEmpty ? '' : '\n\n';
     await file.writeAsString('$existing$separator${generatedFile.contents}');
     return true;
+  }
+
+  Future<int> _removeObsoleteGeneratedFiles(
+    GenerationConfig config,
+    Set<String> generatedPaths,
+  ) async {
+    var removedCount = 0;
+
+    for (final relativePath in _obsoleteGeneratedPaths.difference(
+      generatedPaths,
+    )) {
+      final target = File(path.join(config.targetDirectory.path, relativePath));
+      if (!await target.exists()) {
+        continue;
+      }
+
+      final contents = await target.readAsString();
+      if (!contents.contains(TemplateCatalog.marker)) {
+        continue;
+      }
+
+      await target.delete();
+      removedCount += 1;
+      _logger.detail('Removed obsolete generated file $relativePath');
+    }
+
+    return removedCount;
   }
 
   String _readPackageName(YamlMap? parsed) {

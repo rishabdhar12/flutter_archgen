@@ -59,6 +59,16 @@ class InitCommand extends Command<int> {
         help: 'Enable SQLite database service generation.',
       )
       ..addFlag(
+        'shorebird',
+        negatable: false,
+        help: 'Enable Shorebird release scaffolding and setup docs.',
+      )
+      ..addFlag(
+        'fastlane',
+        negatable: false,
+        help: 'Enable Fastlane release automation scaffolding.',
+      )
+      ..addFlag(
         'force',
         negatable: false,
         help:
@@ -108,6 +118,8 @@ class InitCommand extends Command<int> {
         enableDeviceInfo: argResults['device-info'] as bool? ?? false,
         enableHive: argResults['hive'] as bool? ?? false,
         enableSqlite: argResults['sqlite'] as bool? ?? false,
+        enableShorebird: argResults['shorebird'] as bool? ?? false,
+        enableFastlane: argResults['fastlane'] as bool? ?? false,
         force: argResults['force'] as bool? ?? false,
         skipPubGet: argResults['skip-pub-get'] as bool? ?? false,
         targetDirectory: Directory(argResults['target-dir'] as String? ?? '.'),

@@ -31,6 +31,8 @@ void main() {
         '--device-info',
         '--hive',
         '--sqlite',
+        '--shorebird',
+        '--fastlane',
         '--skip-pub-get',
         '--target-dir',
         tempDir.path,
@@ -46,13 +48,73 @@ void main() {
       );
       expect(
         File(
-          '${tempDir.path}/lib/core/services/firebase/app_firebase_service.dart',
+          '${tempDir.path}/lib/core/services/firebase/firestore/firebase_firestore_service.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/firebase/firestore/firebase_firestore_service_impl.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/firebase/remote_config/firebase_remote_config_service.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/firebase/remote_config/firebase_remote_config_service_impl.dart',
         ).existsSync(),
         isTrue,
       );
       expect(
         File(
           '${tempDir.path}/lib/core/services/database/app_database_service.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/database/app_database_service_impl.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/cache/hive_cache_service.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/cache/hive_cache_service_impl.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/preferences/app_preferences.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/preferences/app_preferences_impl.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/security/secure_storage_service.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/security/secure_storage_service_impl.dart',
         ).existsSync(),
         isTrue,
       );
@@ -68,6 +130,18 @@ void main() {
         ).existsSync(),
         isTrue,
       );
+      expect(
+        File('${tempDir.path}/tool/release/shorebird/README.md').existsSync(),
+        isTrue,
+      );
+      expect(
+        File('${tempDir.path}/shorebird.yaml.example').existsSync(),
+        isTrue,
+      );
+      expect(File('${tempDir.path}/fastlane/Fastfile').existsSync(), isTrue);
+      expect(File('${tempDir.path}/fastlane/Appfile').existsSync(), isTrue);
+      expect(File('${tempDir.path}/fastlane/README.md').existsSync(), isTrue);
+      expect(File('${tempDir.path}/Gemfile').existsSync(), isTrue);
 
       final pubspec = File('${tempDir.path}/pubspec.yaml').readAsStringSync();
       expect(pubspec, contains('flutter_riverpod'));
@@ -75,6 +149,12 @@ void main() {
       expect(pubspec, contains('firebase_crashlytics'));
       expect(pubspec, contains('sentry_flutter'));
       expect(pubspec, contains('sqflite'));
+      expect(
+        File(
+          '${tempDir.path}/lib/core/services/firebase/app_firebase_service.dart',
+        ).existsSync(),
+        isFalse,
+      );
     });
   });
 }

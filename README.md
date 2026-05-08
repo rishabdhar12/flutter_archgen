@@ -5,7 +5,7 @@
 - `app`, `core`, `shared`, and placeholder `features` layers
 - `flutter_riverpod`, `get_it`, and `injectable` setup
 - an always-on `dio` networking stack
-- optional Firebase, Crashlytics, Sentry, notifications, Hive, SQLite, and device info modules
+- optional Firebase, Crashlytics, Sentry, notifications, Hive, SQLite, device info, Shorebird, and Fastlane modules
 - generator-owned file markers so reruns stay predictable
 
 ## What It Generates
@@ -23,6 +23,8 @@ Inside the target Flutter app, the generator creates or updates:
 - the target app `pubspec.yaml`
 - a generated README section if the app README already exists
 - `sentry.properties.example` when Sentry is enabled
+- `tool/release/shorebird/**` and `shorebird.yaml.example` when Shorebird is enabled
+- `fastlane/**` and `Gemfile` when Fastlane is enabled
 
 The generated app includes:
 
@@ -32,7 +34,7 @@ The generated app includes:
 - `get_it` + `injectable` dependency wiring
 - a reusable Dio HTTP client with auth, logging, retry hooks, validation, and error mapping
 - shared preferences and secure storage services
-- optional Firebase bootstrap, Crashlytics, Sentry, notifications, Hive, SQLite, and device info services
+- optional Firebase bootstrap, Crashlytics, Sentry, notifications, Hive, SQLite, device info, Shorebird, and Fastlane release scaffolding
 
 ## Install
 
@@ -78,7 +80,9 @@ dart run flutter_archgen:init \
   --notifications \
   --device-info \
   --hive \
-  --sqlite
+  --sqlite \
+  --shorebird \
+  --fastlane
 ```
 
 ## Flags
@@ -94,8 +98,10 @@ dart run flutter_archgen:init \
 | `--remote-config` | Adds Firebase Remote Config service generation. Implies Firebase support. |
 | `--notifications` | Adds local notification scaffolding and optional Firebase messaging dependency when Firebase is enabled. |
 | `--device-info` | Adds a device info service scaffold. |
-| `--hive` | Adds Hive cache service generation. |
-| `--sqlite` | Adds SQLite database service generation. |
+| `--hive` | Adds Hive cache service generation with CRUD helpers. |
+| `--sqlite` | Adds SQLite database service generation with CRUD helpers. |
+| `--shorebird` | Adds Shorebird release setup docs and template config files. |
+| `--fastlane` | Adds Fastlane automation scaffolding with a `Gemfile`, `Appfile`, and `Fastfile`. |
 | `--force` | Overwrites user-owned files in addition to generator-owned files. |
 | `--skip-pub-get` | Skips the reminder to run `flutter pub get` after generation. |
 | `--target-dir` | Generates into a specific Flutter app directory. Defaults to the current directory. |
@@ -114,7 +120,7 @@ Run these commands inside the generated Flutter app:
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter analyze
 ```
 
@@ -128,8 +134,37 @@ If you enabled `--firebase`, `--remote-config`, or `--crashlytics`:
 2. Run `flutterfire configure` from the generated Flutter app.
 3. Add the generated Firebase config files for each supported platform.
 4. If you enabled Crashlytics, rerun `flutterfire configure` after adding Crashlytics so platform setup stays in sync.
+5. If you want to use `DefaultFirebaseOptions.currentPlatform`, wire that into bootstrap after `flutterfire configure` generates `firebase_options.dart`.
 
-The generated `AppFirebaseService` is intentionally minimal. If you want to use `DefaultFirebaseOptions.currentPlatform`, wire that into the bootstrap after `flutterfire configure` generates `firebase_options.dart`.
+## Shorebird Setup
+
+When `--shorebird` is enabled, the generated app adds:
+
+- `tool/release/shorebird/README.md`
+- `shorebird.yaml.example`
+
+To finish setup:
+
+1. Install the Shorebird CLI.
+2. Run `shorebird init`.
+3. Copy placeholder values from `shorebird.yaml.example` into your real Shorebird config.
+4. Run the generated Shorebird commands with your release flavor, usually `prod`.
+
+## Fastlane Setup
+
+When `--fastlane` is enabled, the generated app adds:
+
+- `Gemfile`
+- `fastlane/Appfile`
+- `fastlane/Fastfile`
+- `fastlane/README.md`
+
+To finish setup:
+
+1. Install Ruby and Bundler.
+2. Run `bundle install`.
+3. Fill in real identifiers and team settings in `fastlane/Appfile`.
+4. Store upload credentials in CI environment variables rather than the repository.
 
 ## Crashlytics Setup
 
