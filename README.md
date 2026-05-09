@@ -1,6 +1,6 @@
 # flutter_archgen
 
-`flutter_archgen` is a Dart CLI package that scaffolds a production-minded Flutter architecture with:
+`flutter_archgen` is a **highly opinionated** Dart CLI package that scaffolds a production-minded Flutter architecture with:
 
 - `app`, `core`, `shared`, and placeholder `features` layers
 - `flutter_riverpod`, `get_it`, and `injectable` setup
